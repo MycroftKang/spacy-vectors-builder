@@ -6,3 +6,6 @@
 *.DS_Store
 .hypothesis
 __pycache__
+
+.venv
+scratch

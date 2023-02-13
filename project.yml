@@ -135,9 +135,9 @@ vars:
   lang: "ko"
   n_process_tokenize: 16
   # The defaults assume that you have a large hard drive mounted under /scratch.
-  downloaded_dir: "/scratch/vectors/downloaded"
-  extracted_dir: "/scratch/vectors/extracted"
-  tokenized_dir: "/scratch/vectors/tokenized"
+  downloaded_dir: "scratch/vectors/downloaded"
+  extracted_dir: "scratch/vectors/extracted"
+  tokenized_dir: "scratch/vectors/tokenized"
   wikipedia_version: 20220201
   newscrawl_year: 2020
   oscar_dataset: "oscar-corpus/OSCAR-2109"
@@ -147,7 +147,7 @@ vars:
   #oscar_dataset_subset: "unshuffled_deduplicated_${vars.lang}"
   oscar_dataset_split: "train"
   oscar_max_texts: -1
-  vector_input_dir: "/scratch/vectors/input"
+  vector_input_dir: "scratch/vectors/input"
   vector_model: "cbow"
   # For languages with alphabets: minn/maxn 4/5 or 5/5 is a good starting point.
   vector_minn: 2
@@ -171,11 +171,11 @@ assets:
       branch: "v0.10.2"
       path: ""
 
-  - dest: "${vars.downloaded_dir}/wikipedia/${vars.lang}wiki-${vars.wikipedia_version}-pages-articles.xml.bz2"
-    url: "https://dumps.wikimedia.org/${vars.lang}wiki/${vars.wikipedia_version}/${vars.lang}wiki-${vars.wikipedia_version}-pages-articles.xml.bz2"
+  # - dest: "${vars.downloaded_dir}/wikipedia/${vars.lang}wiki-${vars.wikipedia_version}-pages-articles.xml.bz2"
+  #   url: "https://dumps.wikimedia.org/${vars.lang}wiki/${vars.wikipedia_version}/${vars.lang}wiki-${vars.wikipedia_version}-pages-articles.xml.bz2"
 
-  - dest: "${vars.downloaded_dir}/opensubtitles/${vars.lang}.txt.gz"
-    url: "http://opus.nlpl.eu/download.php?f=OpenSubtitles/v2018/mono/OpenSubtitles.raw.${vars.lang}.gz"
+  # - dest: "${vars.downloaded_dir}/opensubtitles/${vars.lang}.txt.gz"
+  #   url: "http://opus.nlpl.eu/download.php?f=OpenSubtitles/v2018/mono/OpenSubtitles.raw.${vars.lang}.gz"
 
   - dest: "${vars.downloaded_dir}/newscrawl/${vars.lang}/news.${vars.newscrawl_year}.${vars.lang}.shuffled.deduped.gz"
     url: "https://data.statmt.org/news-crawl/${vars.lang}/news.${vars.newscrawl_year}.${vars.lang}.shuffled.deduped.gz"

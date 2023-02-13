@@ -9,6 +9,76 @@ from multiprocessing import Pool
 from datasets import load_dataset
 from more_itertools import chunked
 
+import spacy
+from mecab import MeCab, Morpheme
+from spacy import Vocab
+from spacy.lang.ko.tag_map import TAG_MAP
+from spacy.scorer import Scorer
+from spacy.symbols import POS, X
+from spacy.tokens import Doc
+from spacy.training import validate_examples
+from spacy.util import DummyTokenizer
+
+
+class KoreanTokenizer(DummyTokenizer):
+    def __init__(self, vocab: Vocab):
+        self.vocab = vocab
+        self.mecab = MeCab()
+
+    def __reduce__(self):
+        return KoreanTokenizer, (self.vocab,)
+
+    def __call__(self, text: str) -> Doc:
+        dtokens = self.mecab.parse(text)
+        surfaces = [dt.surface for dt in dtokens]
+
+        doc = Doc(self.vocab, words=surfaces, spaces=list(check_spaces(text, surfaces)))
+
+        for token, dtoken in zip(doc, dtokens):
+            token.tag_ = dtoken.pos
+            if token.tag_ in TAG_MAP:
+                token.pos = TAG_MAP[token.tag_][POS]
+            else:
+                token.pos = X
+            token.lemma_ = convert_expression(dtoken)
+        doc.user_data["full_tags"] = [dt.pos for dt in dtokens]
+
+        return doc
+
+    def score(self, examples):
+        validate_examples(examples, "KoreanTokenizer.score")
+        return Scorer.score_tokenization(examples)
+
+
+def convert_expression(m: Morpheme):
+    expr = m.feature.expression
+
+    if expr is None:
+        return m.surface
+    else:
+        return "+".join([e.split("/")[0] for e in expr.split("+")])
+
+
+def check_spaces(text, tokens):
+    prev_end = -1
+    start = 0
+    for token in tokens:
+        idx = text.find(token, start)
+        if prev_end > 0:
+            yield prev_end != idx
+        prev_end = idx + len(token)
+        start = prev_end
+    if start > 0:
+        yield False
+
+
+@spacy.registry.tokenizers("mgylabs_korean_tokenizer")
+def create_mgylabs_korean_tokenizer():
+    def create_tokenizer(nlp):
+        return KoreanTokenizer(nlp.vocab)
+
+    return create_tokenizer
+
 
 def tokenize_batch(nlp, batch):
     output = []
@@ -37,7 +107,7 @@ def main(
 
     if lang == "ko":
         nlp = spacy.blank(
-            "ko", config={"nlp": {"tokenizer": {"@tokenizers": "spacy.Tokenizer.v1"}}}
+            "ko", config={"nlp": {"tokenizer": {"@tokenizers": "mgylabs_korean_tokenizer"}}}
         )
     elif lang == "zh":
         nlp = spacy.blank("zh", config={"nlp": {"tokenizer": {"segmenter": "pkuseg"}}})
