@@ -136,7 +136,7 @@ def main(
         else:
             texts = (line["text"] for line in dataset)
 
-    with open(output_file, "w") as output_fileh, Pool(processes=n_process) as pool:
+    with open(output_file, "w", encoding="utf-8") as output_fileh, Pool(processes=n_process) as pool:
         result = pool.imap(partial(tokenize_batch, nlp), chunked(texts, batch_size))
         for lines in result:
             output_fileh.writelines(lines)
